@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -28,9 +28,8 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  return mainWindow;
 }
-
-app.on('ready', createWindow)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -52,14 +51,16 @@ app.on('activate', () => {
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
  */
 
-/*
 import { autoUpdater } from 'electron-updater'
 
-autoUpdater.on('update-downloaded', () => {
-  autoUpdater.quitAndInstall()
+autoUpdater.on('update-downloaded', (info) => {
+  mainWindow.webContents.send('updateReady')
 })
 
 app.on('ready', () => {
+  createWindow()
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
- */
+ipcMain.on("quitAndInstall", (event, arg) => {
+    autoUpdater.quitAndInstall();
+})
